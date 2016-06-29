@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <link href="http://getbootstrap.com/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link href="http://getbootstrap.com/examples/justified-nav/justified-nav.css" rel="stylesheet">
+
+    <style>
+        .axis path {
+            fill: none;
+            stroke: blue;
+            shape-rendering: crispEdges;
+        }
+        .axis text {
+            font-family: Georgia;
+            font-size: 15px;
+        }
+        .legend {
+            font-family: Georgia
+            font-size: 15px;
+            font-weight: bold;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div class="jumbotron">
+
+            <svg id="visualisation" width="800" height="800"></svg>
+            <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+            <script>
+                function InitChart() {
+                    var data = [{
+                        "Category": "Sports",
+                        "value": "734",
+                        "year": "2014"
+                    }, {
+                        "Category": "Sports",
+                        "value": "415",
+                        "year": "2015"
+                    }, {
+                        "Category": "Books",
+                        "value": "50",
+                        "year": "2014"
+                    }, {
+                        "Category": "Books",
+                        "value": "765",
+                        "year": "2015"
+                    }, {
+                        "Category": "Misc",
+                        "value": "576",
+                        "year": "2014"
+                    }, {
+                        "Category": "Misc",
+                        "value": "489",
+                        "year": "2015"
+                    }, {
+                        "Category": "Health and Beauty",
+                        "value": "234",
+                        "year": "2014"
+                    }, {
+                        "Category": "Health and Beauty",
+                        "value": "576",
+                        "year": "2015"
+                    }];
+                    var visData = d3.nest()
+                        .key(function(d) {return d.Category;})
+                        .entries(data);
+                    console.log(JSON.stringify(visData));
+                    var color = d3.scale.category10();
+                    var vis = d3.select("#visualisation"),
+                        WIDTH = 800,
+                        HEIGHT = 800,
+                        MARGINS = {
+                            top: 50,
+                            right: 20,
+                            bottom: 50,
+                            left: 50
+                        },
+
+                        lgd = 100;
+
+                        xScale = d3.scale.linear()
+                                        .range([MARGINS.left, WIDTH - MARGINS.right])
+                                        .domain([2014, 2015]),
+
+                        yScale = d3.scale.linear()
+                                        .range([HEIGHT - MARGINS.top, MARGINS.bottom])
+                                        .domain([0, 800]),
+
+                        xAxis = d3.svg.axis()
+                        .scale(xScale)
+                        .ticks(1),
+
+                        yAxis = d3.svg.axis()
+                        .scale(yScale)
+                        .orient("left");
+                    
+                    vis.append("svg:g")
+                        .attr("class", "x axis")
+                        .attr("transform", "translate(0," + (HEIGHT - MARGINS.bottom) + ")")
+                        .call(xAxis);
+
+                    vis.append("svg:g")
+                        .attr("class", "y axis")
+                        .attr("transform", "translate(" + (MARGINS.left) + ",0)")
+                        .call(yAxis);
+                        
+                    var plotLine = d3.svg.line()
+                        .x(function(d) {
+                            return xScale(d.year);
+                        })
+                        .y(function(d) {
+                            return yScale(d.value);
+                        })
+                        .interpolate("basis");
+
+                    visData.forEach(function(d, i) {
+                        vis.append('svg:path')
+                            .attr('d', plotLine(d.values))
+                            .attr('stroke', function(d, j) {
+                                return "hsl(" + Math.random() * 360 + ",100%,50%)";
+                            })
+                            .attr('stroke-width', 3)
+                            .attr('id', 'line_'+d.key)
+                            .attr('fill', 'none');
+
+                    vis.append("text")
+                            .attr("x", (lgd/2)+1.8*i*lgd)
+                            .attr("y", 50)
+                            .style("fill", "orange")
+                            .attr("class","legend")
+                            .on('click',function(){
+                                var active   = d.active ? false : true;
+                                var opacity = active ? 0 : 1;
+                                d3.select("#line_" + d.key).style("opacity", opacity);
+                                d.active = active;
+                            })
+                            .text(d.key);
+                    });
+                    
+                }
+                
+                InitChart();
+            </script>
+        </div>
+
+    </div>
+
+</body>
+
+</html>
